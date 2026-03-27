@@ -1,3 +1,6 @@
+# Ignore these notes files
+notes/*.ipynb
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
