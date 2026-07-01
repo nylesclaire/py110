@@ -12,6 +12,7 @@
 
 import copy
 import random
+import os
 
 FULL_DECK = [
     ["A", "H"], ["2", "H"], ["3", "H"], ["4", "H"],
@@ -82,33 +83,45 @@ def play_again():
         return True
 
 
-def display_the_table(player_hand, dealer_hand):
+def display_the_table(player_hand, dealer_hand, mystery=True):
     prompt("The dealer's cards:")
-    suits = [f"|{f"{card[1]}"}        |" for card in dealer_hand]
-    card_faces = [f"|{f"{card[0]}".center(9)}|" for card in dealer_hand]
-    card_top_bot_line = [f"|---------|" for card in dealer_hand]
-    print(*card_top_bot_line, sep='   ')
-    print(*suits, sep='   ')
-    print(*card_faces, sep='   ')
-    print(*card_top_bot_line, sep='   ')
+
+    if mystery:
+        dealer_hand_display = [["???", " "]] * (len(dealer_hand) - 1)
+        dealer_hand_display.insert(0, dealer_hand[0])
+    else:
+        dealer_hand_display = dealer_hand
+
+    d_suits = [f"|{f"{card[0]}".ljust(9)}|" for card in dealer_hand_display]
+    d_card_faces = [f"|{f"{card[1]}".center(9)}|" for card in dealer_hand_display]
+    d_card_top_bot_line = [f"|---------|" for card in dealer_hand_display]
+
+    print(*d_card_top_bot_line, sep='   ')
+    print(*d_suits, sep='   ')
+    print(*d_card_faces, sep='   ')
+    print(*d_card_top_bot_line, sep='   ')
     print(f"")
     print(f"")
 
     prompt("Your cards:")
-    suits = [f"|{f"{card[1]}"}        |" for card in player_hand]
-    card_faces = [f"|{f"{card[0]}".center(9)}|" for card in player_hand]
-    card_top_bot_line = [f"|---------|" for card in player_hand]
-    print(*card_top_bot_line, sep='   ')
-    print(*suits, sep='   ')
-    print(*card_faces, sep='   ')
-    print(*card_top_bot_line, sep='   ')
+    p_suits = [f"|{f"{card[0]}".ljust(9)}|" for card in player_hand]
+    p_card_faces = [f"|{f"{card[1]}".center(9)}|" for card in player_hand]
+    p_card_top_bot_line = [f"|---------|" for card in player_hand]
+
+    print(*p_card_top_bot_line, sep='   ')
+    print(*p_suits, sep='   ')
+    print(*p_card_faces, sep='   ')
+    print(*p_card_top_bot_line, sep='   ')
+    if not mystery:
+        prompt(f"The dealer's hand total: {determine_hand_total(dealer_hand)}")
     prompt(f"Your hand total: {determine_hand_total(player_hand)}")
     print(f"")
 
 
-### working on Player turn
-
 def player_turn(player_hand, dealer_hand, deck):   # will return new player_hand list
+    prompt("After shuffling and dealing...")
+    print(f"")
+    
     while True:
         display_the_table(player_hand, dealer_hand)
         prompt("Hit or stay? (h or s)")
@@ -118,23 +131,58 @@ def player_turn(player_hand, dealer_hand, deck):   # will return new player_hand
             return player_hand
         
         player_hand.append(deal_one_card(deck))
+        os.system('clear')
+        prompt("You chose to hit....")
+        print(f"")
 
         if busted(player_hand):
             return player_hand
 
+def dealer_turn(dealer_hand, deck): # will return new dealer_hand list
+    while True:
+        if busted(dealer_hand):
+            return dealer_hand
+        elif determine_hand_total(dealer_hand) >= 17:
+            return dealer_hand
+        
+        dealer_hand.append(deal_one_card(deck))
 
+def compare_hands(player_hand, dealer_hand): # will return the winner
+    player_tot = determine_hand_total(player_hand)
+    dealer_tot = determine_hand_total(dealer_hand)
 
+    # prompt(f"Your hand total: {player_tot}")
+    # prompt(f"The dealer's hand total: {dealer_tot}")
+    # print(f"")
 
+    if player_tot > dealer_tot:
+        prompt("YOU WON! Niiiice.")
+        print(f"")
+        return "player"
+    elif dealer_tot > player_tot:
+        prompt("The dealer won. Bummer.")
+        print(f"")
+        return "dealer"
+    else:
+        prompt("It's a tie! Wild.")
+        print(f"")
+        return None
 
+    
 
 # Main game loop begins here
 def from_welcome_to_finish():
     prompt("Welcome to Twenty-One.")
-    # maybe display rules?
+    print(f"")
+    print("Here's where the rules will go when Nyles finishes this.") # finish!
+    print("--------------------------------------")
+    input(f"==> Ready to start? Press Enter.")
+    
     dealer_wins = 0
     player_wins = 0
 
     while True:
+        os.system('clear')
         winner = play_21()
 
         if winner == "dealer":
@@ -142,6 +190,10 @@ def from_welcome_to_finish():
         elif winner == "player":
             player_wins += 1
 
+# Want to possibly implement here, a way to show the player a tallying
+# of games won and/or a "best of 5" type thing.
+
+        print("--------------------------------------")
         if not play_again():
             break
     prompt("Thanks for playing Twenty-One!")
@@ -162,14 +214,31 @@ def play_21():
         print(f"")
         return "dealer"
     else:
+        os.system('clear')
         prompt("You chose to stay. Now for the dealer's turn.")
+        print(f"")
 
-#     dealer_turn()
-# #    if busted():
-# #        display message
-# #        return winner
+    dealer_hand = dealer_turn(dealer_hand, deck)
+    if busted(dealer_hand):
+        display_the_table(player_hand, dealer_hand, mystery=False)
+#       figure out how to display here, something like:
+#       "The dealer hit twice and then busted!"
 
-#     compare_hands() # this should return the winner or "tie"
+        prompt(f"Heck yeah! The dealer busted!")
+        print(f"")
+        return "player"
+    else:
+        display_the_table(player_hand, dealer_hand)
+        #       figure out how to display here, something like:
+#       "The dealer hit three times and then stayed."
+        prompt("The dealer stayed...")
+        input(f"==> Let's see how those hands measure up. Press Enter.")
+        os.system('clear')
+
+    prompt("Here's the reveal!")
+    print(f"")
+    display_the_table(player_hand, dealer_hand, mystery=False)
+    return compare_hands(player_hand, dealer_hand)
 
 
 
