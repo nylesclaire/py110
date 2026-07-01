@@ -14,16 +14,16 @@ import copy
 import random
 
 FULL_DECK = [
-    ["A", "H"], ["1", "H"], ["2", "H"], ["3", "H"], ["4", "H"],
+    ["A", "H"], ["2", "H"], ["3", "H"], ["4", "H"],
     ["5", "H"], ["6", "H"], ["7", "H"], ["8", "H"], ["9", "H"],
     ["10", "H"], ["J", "H"], ["Q", "H"], ["K", "H"], 
-    ["A", "D"], ["1", "D"], ["2", "D"], ["3", "D"], ["4", "D"],
+    ["A", "D"], ["2", "D"], ["3", "D"], ["4", "D"],
     ["5", "D"], ["6", "D"], ["7", "D"], ["8", "D"], ["9", "D"],
     ["10", "D"], ["J", "D"], ["Q", "D"], ["K", "D"], 
-    ["A", "C"], ["1", "C"], ["2", "C"], ["3", "C"], ["4", "C"],
+    ["A", "C"], ["2", "C"], ["3", "C"], ["4", "C"],
     ["5", "C"], ["6", "C"], ["7", "C"], ["8", "C"], ["9", "C"],
     ["10", "C"], ["J", "C"], ["Q", "C"], ["K", "C"],
-    ["A", "S"], ["1", "S"], ["2", "S"], ["3", "S"], ["4", "S"],
+    ["A", "S"], ["2", "S"], ["3", "S"], ["4", "S"],
     ["5", "S"], ["6", "S"], ["7", "S"], ["8", "S"], ["9", "S"],
     ["10", "S"], ["J", "S"], ["Q", "S"], ["K", "S"],  
 ]
@@ -81,19 +81,29 @@ def play_again():
     if answer[0] == 'y':
         return True
 
+
 def display_the_table(player_hand, dealer_hand):
     prompt("The dealer's cards:")
-    print(f"|----------|     |----------|")
-    print(f"|{f"{dealer_hand[0][0]}{dealer_hand[0][1]}".center(10)}|     |    ??    |")
-    print(f"|----------|     |----------|")
+    suits = [f"|{f"{card[1]}"}        |" for card in dealer_hand]
+    card_faces = [f"|{f"{card[0]}".center(9)}|" for card in dealer_hand]
+    card_top_bot_line = [f"|---------|" for card in dealer_hand]
+    print(*card_top_bot_line, sep='   ')
+    print(*suits, sep='   ')
+    print(*card_faces, sep='   ')
+    print(*card_top_bot_line, sep='   ')
     print(f"")
+    print(f"")
+
     prompt("Your cards:")
-    print(f"|----------|     |----------|")
-    print(f"|{f"{player_hand[0][0]}{player_hand[0][1]}".center(10)}|     |     {player_hand[1]}    |")
-    print(f"|----------|     |----------|")
-    print(f"")
+    suits = [f"|{f"{card[1]}"}        |" for card in player_hand]
+    card_faces = [f"|{f"{card[0]}".center(9)}|" for card in player_hand]
+    card_top_bot_line = [f"|---------|" for card in player_hand]
+    print(*card_top_bot_line, sep='   ')
+    print(*suits, sep='   ')
+    print(*card_faces, sep='   ')
+    print(*card_top_bot_line, sep='   ')
     prompt(f"Your hand total: {determine_hand_total(player_hand)}")
-    
+    print(f"")
 
 
 ### working on Player turn
@@ -147,9 +157,10 @@ def play_21():
 
     player_hand = player_turn(player_hand, dealer_hand, deck)
     if busted(player_hand):
-        prompt("YA LOST")
-# #        display message
-# #        return winner
+        display_the_table(player_hand, dealer_hand)
+        prompt(f"AW DANG! You BUSTED!") # consider making this bubble letters!
+        print(f"")
+        return "dealer"
     else:
         prompt("You chose to stay. Now for the dealer's turn.")
 
