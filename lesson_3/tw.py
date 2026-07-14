@@ -65,8 +65,8 @@ def determine_hand_total(hand):
 
     return sum_values
 
-def busted(hand):
-    return determine_hand_total(hand) > BIG_TOTAL
+def busted(hand_tot):
+    return hand_tot > BIG_TOTAL
 
 def play_again():
     prompt("Want to play again? (y or n)")
@@ -74,7 +74,8 @@ def play_again():
     return answer[0] == 'y'
 
 
-def display_the_table(player_hand, dealer_hand, mystery=True):
+def display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
+                      mystery=True):
     prompt("The dealer's cards:")
 
     if mystery:
@@ -105,51 +106,57 @@ def display_the_table(player_hand, dealer_hand, mystery=True):
     print(*p_card_faces, sep='   ')
     print(*p_card_top_bot_line, sep='   ')
     if not mystery:
-        prompt(f"The dealer's hand total: {determine_hand_total(dealer_hand)}")
-    prompt(f"Your hand total: {determine_hand_total(player_hand)}")
+        prompt(f"The dealer's hand total: {dealer_tot}")
+    prompt(f"Your hand total: {player_tot}")
     print("")
 
 
-def player_turn(player_hand, dealer_hand, deck): #returns new player_hand list
+#returns new player_hand list, player_tot
+def player_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
     prompt("After shuffling and dealing...")
     print("")
 
     while True:
-        display_the_table(player_hand, dealer_hand)
+        display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
+
         prompt("Hit or stay? (h or s)")
         while True:
             answer = input().lower()
             if answer[0] == "s":
-                return player_hand
+                os.system('clear')
+                prompt("You chose to stay. Now for the dealer's turn.")
+                print("")
+                return player_hand, player_tot
             if answer[0] == "h":
                 break
             prompt("That's an invalid answer, try again.")
 
         player_hand.append(deal_one_card(deck))
+        player_tot = determine_hand_total(player_hand)
         os.system('clear')
         prompt("You chose to hit....")
         print("")
 
-        if busted(player_hand):
-            return player_hand
+        if busted(player_tot):
+            display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
+            prompt("AW DANG! You BUSTED!") # consider making this bubble letters!
+            print("")
+            return player_hand, player_tot
 
-def dealer_turn(dealer_hand, deck): # will return new dealer_hand list
+
+# will return new dealer_hand list, dealer_tot
+def dealer_turn(dealer_hand, dealer_tot, deck):
     while True:
-        if busted(dealer_hand):
-            return dealer_hand
-        if determine_hand_total(dealer_hand) >= DEALER_HITS_UNTIL:
-            return dealer_hand
-
         dealer_hand.append(deal_one_card(deck))
+        dealer_tot = determine_hand_total(dealer_hand)
 
-def compare_hands(player_hand, dealer_hand): # will return the winner
-    player_tot = determine_hand_total(player_hand)
-    dealer_tot = determine_hand_total(dealer_hand)
+        if busted(dealer_tot):
+            return dealer_hand, dealer_tot
+        if dealer_tot >= DEALER_HITS_UNTIL:
+            return dealer_hand, dealer_tot
 
-    # prompt(f"Your hand total: {player_tot}")
-    # prompt(f"The dealer's hand total: {dealer_tot}")
-    # print(f"")
-
+# will return the winner
+def compare_hands(player_tot, dealer_tot):
     if player_tot > dealer_tot:
         prompt("YOU WON! Niiiice.")
         print("")
@@ -217,36 +224,42 @@ def play_21():
     player_hand = deal_initial_two_cards(deck)
     dealer_hand = deal_initial_two_cards(deck)
 
-    player_hand = player_turn(player_hand, dealer_hand, deck)
-    if busted(player_hand):
-        display_the_table(player_hand, dealer_hand)
-        prompt("AW DANG! You BUSTED!") # consider making this bubble letters!
-        print("")
-        return "dealer"
-    os.system('clear')
-    prompt("You chose to stay. Now for the dealer's turn.")
-    print("")
+    player_tot = determine_hand_total(player_hand)
+    dealer_tot = determine_hand_total(dealer_hand)
 
-    dealer_hand = dealer_turn(dealer_hand, deck)
-    if busted(dealer_hand):
+    ## Player's turn
+    player_hand, player_tot = player_turn(player_hand, dealer_hand, player_tot,
+                              dealer_tot, deck)
+    if busted(player_tot):
+        return "dealer"
+
+    ## Dealer's turn
+    dealer_hand, dealer_tot = dealer_turn(dealer_hand, dealer_tot, deck)
+    if busted(dealer_tot):
+
         #       figure out how to display here, something like:
         #       "The dealer hit twice and then busted!"
-        display_the_table(player_hand, dealer_hand, mystery=False)
-
+        display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
+                          mystery=False)
         prompt("Heck yeah! The dealer busted!")
         print("")
         return "player"
-    display_the_table(player_hand, dealer_hand)
+
+    ## If both players stayed:
+    display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
+
     #       figure out how to display here, something like:
-#       "The dealer hit three times and then stayed."
+    #       "The dealer hit three times and then stayed."
     prompt("The dealer stayed...")
     input("==> Let's see how those hands measure up. Press Enter.")
     os.system('clear')
 
     prompt("Here's the reveal!")
     print("")
-    display_the_table(player_hand, dealer_hand, mystery=False)
-    return compare_hands(player_hand, dealer_hand)
+    display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
+                      mystery=False)
+
+    return compare_hands(player_tot, dealer_tot)
 
 
 
