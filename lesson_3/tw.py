@@ -145,15 +145,35 @@ def player_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
 
 
 # will return new dealer_hand list, dealer_tot
-def dealer_turn(dealer_hand, dealer_tot, deck):
+def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
+    dealer_hits = 0
     while True:
         dealer_hand.append(deal_one_card(deck))
+        dealer_hits += 1
         dealer_tot = determine_hand_total(dealer_hand)
 
         if busted(dealer_tot):
+            display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
+                          mystery=False)
+            if dealer_hits == 1:
+                prompt(f"Heck yeah! The dealer hit 1 time, "
+                   "and then busted!")
+            else:
+                prompt(f"Heck yeah! The dealer hit {dealer_hits} times, "
+                   "and then busted!")
+            print("")
             return dealer_hand, dealer_tot
+
         if dealer_tot >= DEALER_HITS_UNTIL:
+            display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
+            if dealer_hits == 1:
+                prompt(f"The dealer hit 1 time, and then stayed...")
+            else:
+                prompt(f"The dealer hit {dealer_hits} times, and then stayed...")
+            input("==> Let's see how those hands measure up. Press Enter.")
+            os.system('clear')
             return dealer_hand, dealer_tot
+
 
 # will return the winner
 def compare_hands(player_tot, dealer_tot):
@@ -176,7 +196,7 @@ rules_string = f'''
     -Aces are worth 1 or 11, depending on what else is in your hand.
 
     -You & the dealer will start with 2 cards each-- you'll be able to see
-    only one of the dealer's.
+    only one of the dealer's cards.
     -'Hit' (get another card) as many times as you like, until you either
     bust or choose to 'stay'.
     -On the dealer's turn, they will hit until their total is at least {DEALER_HITS_UNTIL},
@@ -234,26 +254,12 @@ def play_21():
         return "dealer"
 
     ## Dealer's turn
-    dealer_hand, dealer_tot = dealer_turn(dealer_hand, dealer_tot, deck)
+    dealer_hand, dealer_tot = dealer_turn(player_hand, dealer_hand, player_tot,
+                              dealer_tot, deck)
     if busted(dealer_tot):
-
-        #       figure out how to display here, something like:
-        #       "The dealer hit twice and then busted!"
-        display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
-                          mystery=False)
-        prompt("Heck yeah! The dealer busted!")
-        print("")
         return "player"
 
     ## If both players stayed:
-    display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
-
-    #       figure out how to display here, something like:
-    #       "The dealer hit three times and then stayed."
-    prompt("The dealer stayed...")
-    input("==> Let's see how those hands measure up. Press Enter.")
-    os.system('clear')
-
     prompt("Here's the reveal!")
     print("")
     display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
