@@ -148,10 +148,6 @@ def player_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
 def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
     dealer_hits = 0
     while True:
-        dealer_hand.append(deal_one_card(deck))
-        dealer_hits += 1
-        dealer_tot = determine_hand_total(dealer_hand)
-
         if busted(dealer_tot):
             display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
                           mystery=False)
@@ -164,7 +160,7 @@ def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
             print("")
             return dealer_hand, dealer_tot
 
-        if dealer_tot >= DEALER_HITS_UNTIL:
+        if dealer_tot >= DEALER_HITS_UNTIL and dealer_tot >= player_tot:
             display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
             if dealer_hits == 1:
                 prompt(f"The dealer hit 1 time, and then stayed...")
@@ -173,6 +169,10 @@ def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
             input("==> Let's see how those hands measure up. Press Enter.")
             os.system('clear')
             return dealer_hand, dealer_tot
+
+        dealer_hand.append(deal_one_card(deck))
+        dealer_hits += 1
+        dealer_tot = determine_hand_total(dealer_hand)
 
 
 # will return the winner
@@ -209,6 +209,7 @@ rules_string = f'''
 ###############
 # Program loop begins here
 def from_welcome_to_finish():
+    os.system('clear')
     prompt("Welcome to Twenty-One.")
     print("")
     print(rules_string)
