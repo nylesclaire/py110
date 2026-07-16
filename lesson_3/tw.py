@@ -73,8 +73,8 @@ def determine_hand_total(hand):
 def busted(hand_tot):
     return hand_tot > BIG_TOTAL
 
-def play_again():
-    prompt("Want to play again? (y or n)")
+def play_again(message="Want to play again? (y or n)"):
+    prompt(message)
     while True:
         answer = input()
         if answer == "" or answer.lower()[0] not in ['y', 'n']:
@@ -83,18 +83,6 @@ def play_again():
         if answer.lower()[0] == 'y':
             return True
         return False
-
-def play_again_match():
-    prompt("Want to play another match? (y or n)")
-    while True:
-        answer = input()
-        if answer == "" or answer.lower()[0] not in ['y', 'n']:
-            prompt("Try a valid answer! (y or n)")
-            continue
-        if answer.lower()[0] == 'y':
-            return True
-        return False
-
 
 def display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
                       mystery=True):
@@ -272,7 +260,7 @@ def from_welcome_to_finish():
                 break
 
         if MATCH_MODE and someone_won:
-            if play_again_match():
+            if play_again("Want to play another match? (y or n)"):
                 continue
         break
 
