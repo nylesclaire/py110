@@ -36,6 +36,23 @@ CARD_VALUES = {"2": 2,
 BIG_TOTAL = 21
 DEALER_HITS_UNTIL = 17
 
+RULES_STRING = f'''
+    * * * The Rules * * *
+    -Your goal: get as close to {BIG_TOTAL} as possible without going over
+    (a bust!).
+    -2's through 10's are worth their value; Jacks, Queens, and Kings: 10.
+    -Aces are worth 1 or 11, depending on what else is in your hand.
+
+    -You & the dealer will start with 2 cards each-- you'll be able to see
+    only one of the dealer's cards.
+    -'Hit' (get another card) as many times as you like, until you either
+    bust or choose to 'stay'.
+    -On the dealer's turn, they will hit until their total is at least
+    {DEALER_HITS_UNTIL}, or until they bust.
+    -If both players have stayed, the totals of their hands are compared
+    to see whose is closest to {BIG_TOTAL}!
+'''
+
 # This constant can be turned 'off' or 'on' based on whether you'd like to
 # play individual games, or a 'best of' contest
 MATCH_MODE = True
@@ -131,13 +148,16 @@ def player_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
 
         prompt("Hit or stay? (h or s)")
         while True:
-            answer = input().lower()
-            if answer[0] == "s":
+            answer = input()
+            if answer == "" or answer.lower()[0] not in ['h', 's']:
+                prompt("That's an invalid answer, try again.")
+                continue
+            if answer.lower()[0] == 's':
                 os.system('clear')
                 prompt("You chose to stay. Now for the dealer's turn.")
                 print("")
                 return player_hand, player_tot
-            if answer[0] == "h":
+            if answer.lower()[0] == "h":
                 break
             prompt("That's an invalid answer, try again.")
 
@@ -148,8 +168,9 @@ def player_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
         print("")
 
         if busted(player_tot):
-            display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
-            prompt("AW DANG! You BUSTED!") # consider making this bubble letters!
+            display_the_table(player_hand, dealer_hand,
+                              player_tot, dealer_tot)
+            prompt("AW DANG! You BUSTED!")
             print("")
             return player_hand, player_tot
 
@@ -162,7 +183,7 @@ def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
             display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
                           mystery=False)
             if dealer_hits == 1:
-                prompt(f"Heck yeah! The dealer hit 1 time, "
+                prompt("Heck yeah! The dealer hit 1 time, "
                    "and then busted!")
             else:
                 prompt(f"Heck yeah! The dealer hit {dealer_hits} times, "
@@ -173,11 +194,12 @@ def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
         if dealer_tot >= DEALER_HITS_UNTIL:
             display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
             if dealer_hits == 0:
-                prompt(f"The dealer stayed...")
+                prompt("The dealer stayed...")
             elif dealer_hits == 1:
-                prompt(f"The dealer hit 1 time, and then stayed...")
+                prompt("The dealer hit 1 time, and then stayed...")
             else:
-                prompt(f"The dealer hit {dealer_hits} times, and then stayed...")
+                prompt(f"The dealer hit {dealer_hits} times, "
+                       "and then stayed...")
             input("==> Let's see how those hands measure up. Press Enter.")
             os.system('clear')
             return dealer_hand, dealer_tot
@@ -201,21 +223,7 @@ def compare_hands(player_tot, dealer_tot):
     print("")
     return None
 
-rules_string = f'''
-    * * * The Rules * * *
-    -Your goal: get as close to {BIG_TOTAL} as possible without going over (a bust!).
-    -2's through 10's are worth their value; Jacks, Queens, and Kings: 10.
-    -Aces are worth 1 or 11, depending on what else is in your hand.
 
-    -You & the dealer will start with 2 cards each-- you'll be able to see
-    only one of the dealer's cards.
-    -'Hit' (get another card) as many times as you like, until you either
-    bust or choose to 'stay'.
-    -On the dealer's turn, they will hit until their total is at least {DEALER_HITS_UNTIL},
-    or until they bust.
-    -If both players have stayed, the totals of their hands are compared
-    to see whose is closest to {BIG_TOTAL}!
-'''
 
 
 ###############
@@ -224,10 +232,11 @@ def from_welcome_to_finish():
     os.system('clear')
     prompt("Welcome to Twenty-One.")
     print("")
-    print(rules_string)
+    print(RULES_STRING)
     print("--------------------------------------")
     if MATCH_MODE:
-        prompt(f"Let's see who can win {GAMES_NEEDED_TO_WIN_MATCH} games first!")
+        prompt(f"Let's see who can win {GAMES_NEEDED_TO_WIN_MATCH}"
+               " games first!")
     input("==> Ready to start? Press Enter.")
 
     while True:
