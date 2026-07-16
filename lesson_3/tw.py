@@ -182,7 +182,7 @@ def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
             print("")
             return dealer_hand, dealer_tot
 
-        if dealer_tot >= DEALER_HITS_UNTIL and dealer_tot >= player_tot:
+        if dealer_tot >= DEALER_HITS_UNTIL:
             display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
             if dealer_hits == 0:
                 prompt(f"The dealer stayed...")
