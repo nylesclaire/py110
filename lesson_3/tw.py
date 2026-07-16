@@ -36,6 +36,11 @@ CARD_VALUES = {"2": 2,
 BIG_TOTAL = 21
 DEALER_HITS_UNTIL = 17
 
+# This constant can be turned 'off' or 'on' based on whether you'd like to
+# play individual games, or a 'best of' contest
+MATCH_MODE = True
+GAMES_NEEDED_TO_WIN_MATCH = 3
+
 
 def prompt(message):
     print(f"==> {message}")
@@ -70,8 +75,25 @@ def busted(hand_tot):
 
 def play_again():
     prompt("Want to play again? (y or n)")
-    answer = input().lower()
-    return answer[0] == 'y'
+    while True:
+        answer = input()
+        if answer == "" or answer.lower()[0] not in ['y', 'n']:
+            prompt("Try a valid answer! (y or n)")
+            continue
+        if answer.lower()[0] == 'y':
+            return True
+        return False
+
+def play_again_match():
+    prompt("Want to play another match? (y or n)")
+    while True:
+        answer = input()
+        if answer == "" or answer.lower()[0] not in ['y', 'n']:
+            prompt("Try a valid answer! (y or n)")
+            continue
+        if answer.lower()[0] == 'y':
+            return True
+        return False
 
 
 def display_the_table(player_hand, dealer_hand, player_tot, dealer_tot,
@@ -162,7 +184,9 @@ def dealer_turn(player_hand, dealer_hand, player_tot, dealer_tot, deck):
 
         if dealer_tot >= DEALER_HITS_UNTIL and dealer_tot >= player_tot:
             display_the_table(player_hand, dealer_hand, player_tot, dealer_tot)
-            if dealer_hits == 1:
+            if dealer_hits == 0:
+                prompt(f"The dealer stayed...")
+            elif dealer_hits == 1:
                 prompt(f"The dealer hit 1 time, and then stayed...")
             else:
                 prompt(f"The dealer hit {dealer_hits} times, and then stayed...")
@@ -214,26 +238,44 @@ def from_welcome_to_finish():
     print("")
     print(rules_string)
     print("--------------------------------------")
+    if MATCH_MODE:
+        prompt(f"Let's see who can win {GAMES_NEEDED_TO_WIN_MATCH} games first!")
     input("==> Ready to start? Press Enter.")
 
-    dealer_wins = 0
-    player_wins = 0
-
     while True:
-        os.system('clear')
-        winner = play_21()
+        dealer_wins = 0
+        player_wins = 0
 
-        if winner == "dealer":
-            dealer_wins += 1
-        elif winner == "player":
-            player_wins += 1
+        while True:
+            os.system('clear')
+            winner = play_21()
 
-# Want to possibly implement here, a way to show the player a tallying
-# of games won and/or a "best of 5" type thing.
+            if winner == "dealer":
+                dealer_wins += 1
+            elif winner == "player":
+                player_wins += 1
 
-        print("--------------------------------------")
-        if not play_again():
-            break
+            print("--------------------------------------")
+            if MATCH_MODE:
+                someone_won = False
+                prompt(f"Dealer: {dealer_wins} | Player: {player_wins}")
+                if dealer_wins == GAMES_NEEDED_TO_WIN_MATCH:
+                    prompt("Dang. The dealer won the match.")
+                    someone_won = True
+                    break
+                if player_wins == GAMES_NEEDED_TO_WIN_MATCH:
+                    prompt("WOOHOO! You won the match! ")
+                    someone_won = True
+                    break
+
+            if not play_again():
+                break
+
+        if MATCH_MODE and someone_won:
+            if play_again_match():
+                continue
+        break
+
     prompt("Thanks for playing Twenty-One!")
 
 
